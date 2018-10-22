@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+			<link rel="stylesheet" type="text/css" href="style/bootstrap4/bootstrap.min.css">
+			<link rel="stylesheet" type="text/css" href="style/main_styles.css">
+			<link href="plugins/fontawesome-all.css" rel="stylesheet" type="text/css">
+			<link rel="stylesheet" type="text/css" href="plugins/OwlCarousel2-2.2.1/owl.theme.default.css">
+			<link href="plugins/icon-font/styles.css" rel="stylesheet" type="text/css">
+
+	<title>ABLprojects S.A.S</title>
+	<script>
+	// Redirect console.log when running from Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+
+	<style>
+	body
+	{
+		font-family: Comic Sans MS;
+	}
+
+	h1
+	{
+		margin-right:50px;
+	}
+
+	.evo-image
+	{
+		position:initial;
+		right:5px;
+		top:5px;
+		width:90px;
+		height:auto;
+		background:white;
+	}
+	</style>
+
+	<!-- Start WOWSlider.com HEAD section --> <!-- add to the <head> of your page -->
+	<link rel="stylesheet" type="text/css" href="engine0/style.css" />
+	<script type="text/javascript" src="engine0/jquery.js"></script>
+	<!-- End WOWSlider.com HEAD section --></head>
+
+<body>
+		<center>
+			<h1 style="color:white;"> &nbsp;&nbsp;&nbsp;ABLprojects &nbsp;&nbsp;&nbsp;&nbsp;S.A.S <br> &nbsp;&nbsp;&nbsp;&nbsp;<img class="evo-image" src="img/logotipo.png" /> </h1>
+				<p >Diseño e Implementación de un Sistema de marketing digital, para una fácil adquisición
+					 y visualicación de productos por parte de<br>los clientes de tiendas o centro comerciales.
+					Así ofrecer la oportunidad de realizar sus compras de una manera más rápida y diferente.<br>
+					Cotando con la posibilidad de visualizar promociones en tiempo real, con el fin de incentivar
+					<br>de una manera mucho más eficiente la compra de los prductos.</p>
+		</center>
+
+	<!-- Start WOWSlider.com BODY section --> <!-- add to the <body> of your page -->
+	<div id="wowslider-container0">
+	<div class="ws_images"><ul>
+		<li><img src="data0/images/1.png" alt="1" title="1" id="wows0_0"/></li>
+		<li><img src="data0/images/2.png" alt="2" title="2" id="wows0_1"/></li>
+		<li><a href="http://wowslider.net"><img src="data0/images/3.png" alt="wow slider" title="3" id="wows0_2"/></a></li>
+		<li><img src="data0/images/4.png" alt="4" title="4" id="wows0_3"/></li>
+	</ul></div>
+	<div class="ws_bullets"><div>
+		<a href="#" title="1"><span><img src="data0/tooltips/1.png" alt="1"/>1</span></a>
+		<a href="#" title="2"><span><img src="data0/tooltips/2.png" alt="2"/>2</span></a>
+		<a href="#" title="3"><span><img src="data0/tooltips/3.png" alt="3"/>3</span></a>
+		<a href="#" title="4"><span><img src="data0/tooltips/4.png" alt="4"/>4</span></a>
+	</div></div><div class="ws_script" style="position:absolute;left:-99%"><a href="http://wowslider.net">bootstrap image slider</a> by WOWSlider.com v8.8</div>
+	<div class="ws_shadow"></div>
+	</div>
+	<script type="text/javascript" src="engine0/wowslider.js"></script>
+	<script type="text/javascript" src="engine0/script.js"></script>
+	<!-- End WOWSlider.com BODY section -->
+
+	<center><h1 style="color:white;">&nbsp;&nbsp;&nbsp;Data Beacons </h1>
+
+	<p id="message">Cargando...</p>
+
+	<div id="found-beacons"></div>
+
+	<!--
+	Including cordova.js will automatically include the JavaScript library
+	for Eddystone.
+	-->
+	<script src="cordova.js"></script>
+
+	<script>
+	// Application code starts here. The code is wrapped in a
+	// function closure to prevent overwriting global objects.
+	(function()
+	{
+		// Dictionary of beacons.
+		var beacons = {};
+
+		// Timer that displays list of beacons.
+		var timer = null;
+
+		function onDeviceReady()
+		{
+			// Start tracking beacons!
+			setTimeout(startScan, 500);
+
+			// Timer that refreshes the display.
+			timer = setInterval(updateBeaconList, 500);
+		}
+
+		function onBackButtonDown()
+		{
+			evothings.eddystone.stopScan();
+			navigator.app.exitApp();
+		}
+
+		function startScan()
+		{
+			showMessage('Scan in progress.');
+			evothings.eddystone.startScan(
+				function(beacon)
+				{
+					// Update beacon data.
+					beacon.timeStamp = Date.now();
+					beacons[beacon.address] = beacon;
+				},
+				function(error)
+				{
+					showMessage('Eddystone scan error: ' + error);
+				});
+		}
+
+		// Map the RSSI value to a value between 1 and 100.
+		function mapBeaconRSSI(rssi,bid)
+		{
+			if (rssi >= 0)return 1;
+			if (rssi < -100) return 100;
+			return 100 + rssi;
+		}
+
+		function getSortedBeaconList(beacons)
+		{
+			var beaconList = [];
+			for (var key in beacons)
+			{
+				beaconList.push(beacons[key]);
+			}
+			beaconList.sort(function(beacon1, beacon2)
+			{
+				return mapBeaconRSSI(beacon1.rssi) < mapBeaconRSSI(beacon2.rssi);
+			});
+			return beaconList;
+		}
+
+		function updateBeaconList()
+		{
+			removeOldBeacons();
+			displayBeacons();
+		}
+
+		function removeOldBeacons()
+		{
+			var timeNow = Date.now();
+			for (var key in beacons)
+			{
+				// Only show beacons updated during the last 60 seconds.
+				var beacon = beacons[key];
+				if (beacon.timeStamp + 60000 < timeNow)
+				{
+					delete beacons[key];
+				}
+			}
+		}
+
+		function displayBeacons()
+		{
+			var html = '';
+			var sortedList = getSortedBeaconList(beacons);
+			for (var i = 0; i < sortedList.length; ++i)
+			{
+				var beacon = sortedList[i];
+				var htmlBeacon =
+					'<p>'
+					+	htmlBeaconName(beacon)
+					+	htmlBeaconURL(beacon)
+					+	htmlBeaconNID(beacon)
+					+	htmlBeaconBID(beacon)
+					+	htmlBeaconEID(beacon)
+					+	htmlBeaconVoltage(beacon)
+					+	htmlBeaconTemperature(beacon)
+					+	htmlBeaconRSSI(beacon)
+					+ '</p>';
+				html += htmlBeacon
+			}
+			document.querySelector('#found-beacons').innerHTML = html;
+		}
+
+		function htmlBeaconName(beacon)
+		{
+			var name = beacon.name || 'no name';
+			return '<strong>' + name + '</strong><br/>';
+		}
+
+		function htmlBeaconURL(beacon)
+		{
+			return beacon.url ?
+				'URL: ' + beacon.url + '<br/>' :  '';
+		}
+
+		function htmlBeaconURL(beacon)
+		{
+			return beacon.url ?
+				'URL: ' + beacon.url + '<br/>' :  '';
+		}
+
+		function htmlBeaconNID(beacon)
+		{
+			return beacon.nid ?
+				'NID: ' + uint8ArrayToString(beacon.nid) + '<br/>' :  '';
+		}
+
+		function htmlBeaconBID(beacon)
+		{
+			return beacon.bid ?
+				'BID: ' + uint8ArrayToString(beacon.bid) + '<br/>' :  '';
+		}
+
+		function htmlBeaconEID(beacon)
+		{
+			return beacon.eid ?
+				'EID: ' + uint8ArrayToString(beacon.eid) + '<br/>' :  '';
+		}
+
+		function htmlBeaconVoltage(beacon)
+		{
+			return beacon.voltage ?
+				'Voltage: ' + beacon.voltage + '<br/>' :  '';
+		}
+
+		function htmlBeaconTemperature(beacon)
+		{
+			return beacon.temperature && beacon.temperature != 0x8000 ?
+				'Temperature: ' + beacon.temperature + '<br/>' :  '';
+		}
+
+		function htmlBeaconRSSI(beacon)
+		{
+			return beacon.rssi ?
+				'RSSI: ' + beacon.rssi + '<br/>' :  '';
+		}
+
+		function uint8ArrayToString(uint8Array)
+		{
+			function format(x)
+			{
+				var hex = x.toString(16);
+				return hex.length < 2 ? '0' + hex : hex;
+			}
+
+			var result = '';
+			for (var i = 0; i < uint8Array.length; ++i)
+			{
+				result += format(uint8Array[i]) + ' ';
+			}
+			return result;
+		}
+
+		function showMessage(text)
+		{
+			document.querySelector('#message').innerHTML = text;
+		}
+
+		// This calls onDeviceReady when Cordova has loaded everything.
+		document.addEventListener('deviceready', onDeviceReady, false);
+
+		// Add back button listener (for Android).
+		document.addEventListener('backbutton', onBackButtonDown, false);
+
+	})(); // End of closure.
+	</script>
+
+
+				<br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+			<footer><p class="text-center"> Copyright &copy; 2018, ABLprojects S.A.S</p></footer>
+			<script src="js/jquery-3.2.1.min.js"></script>
+			<script src="style/bootstrap4/popper.js"></script>
+			<script src="style/bootstrap4/bootstrap.min.js"></script>
+			<script src="plugins/OwlCarousel2-2.2.1/owl.carousel.js"></script>
+</body>
+
+</html>
